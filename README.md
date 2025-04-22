@@ -2,30 +2,30 @@
 
 ## Overview
 
-This repository is a Vue 3 + Vite demo application and template for Sign‑In‑With‑Solana (SIWS) to an Internet Computer (IC) canister. By combining:
+This repository is a **Vanilla TypeScript + Vite** demo application and template for Sign‑In‑With‑Solana (SIWS) to an Internet Computer (IC) canister. By combining:
 
-- **solana-wallets-vue** (wallet connections)  
-- **ic-siws-js** (SIWS authentication)  
-- **ic_siws_provider** canister (Rust)  
+- **ic-siws-js** (SIWS authentication)
+- **ic_siws_provider** canister (Rust)
+- **solana-connect** (wallet connections)
 
 you get a fully authenticated cross‑chain dapp where a Solana wallet maps one‑to‑one to an IC identity.
 
 > [!NOTE]
-> In addition to this Vue demo of ic-siws, there are versions for React, Svelte, and more in the main [ic-siws](https://github.com/kristoferlund/ic-siws) repository.
+> In addition to this vanilla TS demo of ic-siws, there are versions for React, Vue, Svelte, and more in the main [ic-siws](https://github.com/kristoferlund/ic-siws) repository.
 
 ### Highlights
 
-- Sign in with Solana to interact with IC canisters  
-- One‑to‑one mapping between wallet and IC identity  
+- Sign in with Solana to interact with IC canisters
+- One‑to‑one mapping between wallet and IC identity
 - Leverage IC features: BTC/ETH integration, fast finality, low transaction fees, HTTPS outcalls, cheap data storage
 
 ## Live Demo
 
-Try it live: <https://fqws5-uyaaa-aaaal-qsmta-cai.icp0.io>
+Try it live: <https://et233-aaaaa-aaaal-qsmvq-cai.icp0.io>
 
 ## Key features
 
-The demo is built using [Vite](https://vitejs.dev/) to provide a fast development experience.
+The demo is built using [Vite](https://vitejs.dev/) to provide a fast development experience and uses plain TypeScript without any framework.
 
 ## Table of contents
 
@@ -43,40 +43,49 @@ The demo is built using [Vite](https://vitejs.dev/) to provide a fast developmen
 
 ## App components
 
-If you are new to IC, please read the [Internet Computer Basics](https://internetcomputer.org/basics) before proceeding.
-
 This app consists of two main components:
 
 ### Frontend
 
-The frontend is a Vue application served by an ICP asset canister. In a real world scenario, this frontend application would make authenticated calls to one or more application canisters. Such application canisters are not included with this demo.
+The frontend is a vanilla TypeScript application built and bundled with Vite. All UI and login logic lives in `packages/frontend/src/main.ts`. It handles:
+
+- Injecting HTML markup and CSS
+- Connecting to a Solana wallet via `solana-connect`
+- Driving the SIWS login flow through `ic-siws-js`
+- Managing UI state (connect, login, logout, display public keys and principals)
+
+In a production setup, this frontend would make authenticated calls to one or more application canisters.
 
 ### IC SIWS Provider
 
-The pre-built IC SIWS Provider is used to create an identity for the user. It is a Rust based canister that implements the SIWS login flow. The flow starts with a SIWS message being generated and ends with a Delegate Identity being created for the user. The Delegate Identity gives the user access to the backend canister.
+The pre-built IC SIWS Provider is a Rust canister that implements the SIWS login flow. It generates and verifies SIWS messages, and issues a Delegate Identity for the user.
 
 ## How it works
 
-This is the high-level flow between the app components when a user logs in:
+High‑level login flow:
 
-1. The application requests a SIWS message from the `ic_siws_provider` canister on behalf of the user.
-2. The application displays the SIWS message to the user who signs it with their Solana wallet.
-3. The application sends the signed SIWS message to the `ic_siws_provider` canister to login the user. The canister verifies the signature and creates an identity for the user.
-4. The application retrieves the identity from the `ic_siws_provider` canister.
-5. The application can now use the identity to make authenticated calls to the app canister.
+1. Frontend requests a SIWS challenge message from the `ic_siws_provider` canister.
+2. Frontend opens the user’s Solana wallet and prompts them to sign the message.
+3. Frontend submits the signed message back to `ic_siws_provider` to authenticate.
+4. Canister verifies the signature and returns a Delegate Identity.
+5. Frontend stores the identity and uses it for authenticated calls.
 
 ## Run locally
 
 ```bash
+# start dfx and local replica
 dfx start --clean --background
+# deploy canisters (frontend and provider)
 make deploy-all
+# start Vite dev server
+cd packages/frontend && npm install && npm run dev
 ```
 
 ## Details
 
 ### IC SIWS Provider
 
-The `ic_siws_provider` canister is pre-built and added to the project as a dependency in the [dfx.json](/dfx.json) file.
+Configured in [dfx.json](/dfx.json) as a custom canister:
 
 ```json
 {
@@ -92,7 +101,7 @@ The `ic_siws_provider` canister is pre-built and added to the project as a depen
 }
 ```
 
-Its behavior is configured and passed as an argument to the canister `init` function. Below is an example of how to configure the canister using the `dfx` command line tool in the project [Makefile](/Makefile):
+Initialization parameters (in `Makefile`):
 
 ```makefile
 dfx deploy ic_siws_provider --argument "( \
@@ -113,73 +122,20 @@ dfx deploy ic_siws_provider --argument "( \
 )"
 ```
 
-For more information about the configuration options, see the [ic-siws-provider](https://github.com/kristoferlund/ic-siws/tree/main/packages/ic_siws_provider) documentation.
-
 ### Frontend
 
-The frontend is a Vue 3 application built with Vite. It uses the `solana-wallets-vue` plugin to manage Solana wallet connections, and the `ic-siws-js` Vue module to handle SIWS-based authentication flows.
-
-- solana-wallets-vue
-  A Vue plugin that integrates Solana wallet adapters into the application. It provides:
-  - A plugin install function (`SolanaWallets`) that accepts `walletOptions`.
-  - A `<wallet-multi-button>` component for user interaction.
-  - Composables like `useWallet` to access and react to wallet state.
-
-- walletOptions
-  Configuration object passed to `SolanaWallets`, defined in `main.ts`. For example:
-  ```ts
-  import SolanaWallets from 'solana-wallets-vue';
-  const walletOptions = {
-    wallets: [
-      // e.g. new PhantomWalletAdapter(), new SolflareWalletAdapter(), etc.
-    ],
-    autoConnect: true,    // automatically reconnect to last used wallet
-  };
-  createApp(App)
-    .use(SolanaWallets, walletOptions)
-    .mount('#app');
-  ```
-
-- useWallet
-  A composable from `solana-wallets-vue` that returns reactive wallet state. Common usage:
-  ```ts
-  import { useWallet } from 'solana-wallets-vue';
-  const { publicKey, wallet } = useWallet();
-  // publicKey.value: connected wallet public key (or null)
-  // wallet.value.adapter: current wallet adapter instance
-  ```
-
-- createSiwsIdentityProvider
-  A function from `ic-siws-js/vue` to initialize the SIWS identity provider. Call it once with your canister ID and the wallet adapter:
-  ```ts
-  import { createSiwsIdentityProvider } from 'ic-siws-js/vue';
-  createSiwsIdentityProvider({
-    canisterId,
-    adapter: wallet.value?.adapter,  // adapter must implement signMessage
-  });
-  ```
-
-- useSiws
-  A composable from `ic-siws-js/vue` that manages the SIWS login flow. It exposes:
-  - `prepareLogin()`: fetches a SIWS message from the canister.
-  - `login()`: signs the message with the wallet and submits it to the canister.
-  - `identity`: the DelegateIdentity after successful login.
-  - `clear()`: resets state / logs out.
-  - Reactive status flags (`prepareLoginStatus`, `signMessageStatus`, `loginStatus`) and error properties (`prepareLoginError`, `signMessageError`, `loginError`), to drive UI feedback.
-  ```ts
-  import { useSiws } from 'ic-siws-js/vue';
-  const siws = useSiws();
-  // use siws.login(), siws.clear(), siws.identity, status flags, etc.
-  ```
+- **`main.ts`**: single entrypoint, injects DOM, binds buttons, subscribes to `siwsStateStore`, handles wallet events.
+- **`state.ts`**: local state store for Solana adapter and UI context.
+- **CSS**: simple `style.css` for layout and utility classes (e.g. `.hidden`).
 
 ## Updates
 
-See the [CHANGELOG](CHANGELOG.md) for details on updates.
+See the [CHANGELOG](CHANGELOG.md).
 
 ## Contributing
 
-Contributions are welcome. Please submit your pull requests or open issues to propose changes or report bugs.
+Pull requests and issues welcome.
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for more details.
+MIT License. See the [LICENSE](LICENSE) file.
