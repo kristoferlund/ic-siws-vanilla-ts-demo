@@ -5,11 +5,7 @@ import solLogo from "/solana.svg";
 import { canisterId } from "../../ic_siws_provider/declarations/index";
 import { SiwsManager, siwsStateStore } from "ic-siws-js";
 import { SolanaConnect } from "solana-connect";
-import {
-  Adapter,
-  SignInMessageSignerWalletAdapter,
-} from "@solana/wallet-adapter-base";
-import { localStore } from "./state";
+import { Adapter } from "@solana/wallet-adapter-base";
 
 const SELECTORS = {
   appContainer: "#app",
@@ -115,8 +111,7 @@ class App {
   private subscribeSolanaChanges(): void {
     this.solConnect.onWalletChange((adapter: Adapter | null) => {
       if (adapter) {
-        localStore.send({ type: "setAdapter", adapter });
-        this.siws.setAdapter(adapter as SignInMessageSignerWalletAdapter);
+        this.siws.setAdapter(adapter);
       }
       this.refreshUi();
     });
@@ -178,7 +173,7 @@ class App {
   }
 
   private toggleSolPubKey(): void {
-    const adapter = localStore.getSnapshot().context.adapter;
+    const adapter = this.solConnect.getWallet();
     if (adapter?.publicKey) {
       const addr = adapter.publicKey.toString();
       this.elements.solPubKey.textContent = `${addr.slice(0, 4)}...${addr.slice(-4)}`;
@@ -189,7 +184,7 @@ class App {
   }
 
   private toggleLoginLogout(): void {
-    const adapter = localStore.getSnapshot().context.adapter;
+    const adapter = this.solConnect.getWallet();
     const identity = siwsStateStore.getSnapshot().context.identity;
 
     this.setDisplay(this.elements.connectButton, !adapter);
