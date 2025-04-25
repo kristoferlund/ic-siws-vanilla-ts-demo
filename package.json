@@ -21,8 +21,7 @@
     "@dfinity/candid": "^2.2.0",
     "@dfinity/identity": "^2.2.0",
     "@solana/wallet-adapter-base": "^0.9.24",
-    "@xstate/store": "^3.5.1",
-    "ic-siws-js": "file:../ic-siws/packages/ic_siws_js",
+    "ic-siws-js": "^0.1.0",
     "solana-connect": "^0.1.11"
   }
 }

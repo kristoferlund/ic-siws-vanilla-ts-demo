@@ -1,12 +1,12 @@
 {
   "canisters": {
     "ic_siws_provider": {
-      "candid": "https://github.com/kristoferlund/ic-siws/releases/download/v0.0.2/ic_siws_provider.did",
+      "candid": "https://github.com/kristoferlund/ic-siws/releases/download/v0.1.0/ic_siws_provider.did",
       "declarations": {
         "output": "packages/ic_siws_provider/declarations"
       },
       "type": "custom",
-      "wasm": "https://github.com/kristoferlund/ic-siws/releases/download/v0.0.2/ic_siws_provider.wasm.gz"
+      "wasm": "https://github.com/kristoferlund/ic-siws/releases/download/v0.1.0/ic_siws_provider.wasm.gz"
     },
     "frontend": {
       "build": ["pnpm run build"],
