@@ -5,7 +5,7 @@
 This repository is a Vanilla TS + Vite application and template that demonstrates how to authenticate
 users with Sign‑In‑With‑Solana (SIWS) to an Internet Computer (IC) canister. By combining:
 
-- **[Solana wallet-adapter](https://github.com/anza-xyz/wallet-adapter)**: Provides Solana wallet connections, wallet connectio UI, etc. 
+- **[Solana wallet-adapter](https://github.com/anza-xyz/wallet-adapter)**: Provides Solana wallet connections, wallet connectio UI, etc.
 - **[ic-siws-js](https://www.npmjs.com/package/ic-siwe-js)**: SIWS authentication package, supporting Vanilla TS, React, Vue and Svelte.
 - **[ic_siws_provider](https://github.com/kristoferlund/ic-siws/tree/main/packages/ic_siws_provider)**: Pre-built canister to add SIWS authentication support to ICP projects.
 
@@ -16,8 +16,8 @@ you get a fully authenticated cross‑chain dapp where a Solana wallet maps one�
 
 ### Highlights
 
-- Sign in with Solana to interact with IC canisters  
-- One‑to‑one mapping between Solana wallet and IC identity  
+- Sign in with Solana to interact with IC canisters
+- One‑to‑one mapping between Solana wallet and IC identity
 - Leverage IC features: BTC/ETH integration, fast finality, low transaction fees, HTTPS outcalls, cheap data storage
 
 ## Live Demo
@@ -52,8 +52,17 @@ This is the high-level flow between the app components when a user logs in:
 
 ```bash
 dfx start --clean --background
-make deploy-all
+make create-canisters
+make deploy-provider
+make run-frontend
 ```
+
+> [!NOTE]
+> The `run-frontend` script starts a Vite server that serves the frontend application. The Vite server will automatically reload the application when you make changes to the frontend code.
+>
+> The provider canister is configured to use the Vite server as the domain for the SIWS login flow. If you are running the frontend on a different domain, you need to change the `domain` parameter in the `Makefile` before deploying the provider canister. The default configuration specifies `domain = "localhost:5173"`. This is the default domain for the Vite development server.
+>
+> Learn more about these settings in the [ic-siws](https://github.com/kristoferlund/ic-siws) repository.
 
 ## Details
 
